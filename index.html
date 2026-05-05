@@ -519,17 +519,38 @@ let selection = []; // array of tile indices in selection order
 let foundWordKeys = new Set(); // canonical key per word
 let score = 0;
 let displayOrder = []; // grid position -> tile index (shuffled)
+let solvedQuartileOrder = []; // array of tile-idx arrays, in solve order
 
 const $ = (id) => document.getElementById(id);
 
 function currentPuzzle() { return PUZZLES[puzzleIndex]; }
 
+function solvedTilesFlat() {
+  // Tiles from solved quartiles, flattened in solve-then-quartile-order.
+  // Returns the bottom rows of the grid, last row = most recently solved.
+  return solvedQuartileOrder.flatMap(arr => arr.slice());
+}
+
 function shuffleDisplay() {
-  displayOrder = currentPuzzle().tiles.map((_, i) => i);
-  for (let i = displayOrder.length - 1; i > 0; i--) {
+  // Shuffle only unsolved tiles. Solved quartiles stay pinned at the bottom
+  // in solve order so the player can read each solved word left-to-right.
+  const tiles = currentPuzzle().tiles;
+  const bottom = solvedTilesFlat();
+  const pinned = new Set(bottom);
+  const unsolved = tiles.map((_, i) => i).filter(i => !pinned.has(i));
+  for (let i = unsolved.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [displayOrder[i], displayOrder[j]] = [displayOrder[j], displayOrder[i]];
+    [unsolved[i], unsolved[j]] = [unsolved[j], unsolved[i]];
   }
+  displayOrder = [...unsolved, ...bottom];
+}
+
+function pinQuartileToBottom(quartileIdxArr) {
+  // Pull the 4 tiles out of their current positions and append in word order.
+  // Other tiles flow up; bottom row(s) hold solved quartiles.
+  const set = new Set(quartileIdxArr);
+  displayOrder = displayOrder.filter(i => !set.has(i));
+  displayOrder.push(...quartileIdxArr);
 }
 
 function wordKey(idxArr) { return idxArr.join("-"); }
@@ -678,6 +699,8 @@ function submitWord() {
   const pts = pointsFor(selection.length);
   score += pts;
   if (match.quartile) {
+    solvedQuartileOrder.push(match.idx.slice());
+    pinQuartileToBottom(match.idx);
     flashToast(`Quartile! +${pts}`, "quartile");
   } else {
     flashToast(`+${pts}`, "success");
@@ -712,6 +735,7 @@ function resetGame() {
   selection = [];
   foundWordKeys = new Set();
   score = 0;
+  solvedQuartileOrder = [];
   shuffleDisplay();
   hideVictory();
   render();
