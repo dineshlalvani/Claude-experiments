@@ -16,7 +16,71 @@
     --tile-selected: #1c1c1e;
     --tile-selected-text: #ffffff;
     --tile-used: #ece9df;
+    --tile-quartile-bg: #f7f1d9;
+    --chip-bg: #ece9df;
+    --frag-bg: #f0eee4;
+    --divider: #e5e3da;
     --gold: #c9a227;
+    --gold-text: #ffffff;
+    --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e0e10;
+      --panel: #1c1c1e;
+      --ink: #f2f2f5;
+      --muted: #8e8e93;
+      --accent: #ff5566;
+      --tile: #1c1c1e;
+      --tile-border: #2e2e30;
+      --tile-selected: #f2f2f5;
+      --tile-selected-text: #0e0e10;
+      --tile-used: #2a2a2c;
+      --tile-quartile-bg: #2a2410;
+      --chip-bg: #2a2a2c;
+      --frag-bg: #2a2a2c;
+      --divider: #2e2e30;
+      --gold: #d6b13a;
+      --gold-text: #1c1c1e;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+    }
+  }
+  html[data-theme="dark"] {
+    --bg: #0e0e10;
+    --panel: #1c1c1e;
+    --ink: #f2f2f5;
+    --muted: #8e8e93;
+    --accent: #ff5566;
+    --tile: #1c1c1e;
+    --tile-border: #2e2e30;
+    --tile-selected: #f2f2f5;
+    --tile-selected-text: #0e0e10;
+    --tile-used: #2a2a2c;
+    --tile-quartile-bg: #2a2410;
+    --chip-bg: #2a2a2c;
+    --frag-bg: #2a2a2c;
+    --divider: #2e2e30;
+    --gold: #d6b13a;
+    --gold-text: #1c1c1e;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  html[data-theme="light"] {
+    --bg: #f6f5f0;
+    --panel: #ffffff;
+    --ink: #1c1c1e;
+    --muted: #8e8e93;
+    --accent: #d72b3f;
+    --tile: #ffffff;
+    --tile-border: #e5e3da;
+    --tile-selected: #1c1c1e;
+    --tile-selected-text: #ffffff;
+    --tile-used: #ece9df;
+    --tile-quartile-bg: #f7f1d9;
+    --chip-bg: #ece9df;
+    --frag-bg: #f0eee4;
+    --divider: #e5e3da;
+    --gold: #c9a227;
+    --gold-text: #ffffff;
     --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,9 +105,25 @@
     gap: 14px;
   }
   header {
-    display: flex; align-items: baseline; justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 4px 4px 8px;
-    border-bottom: 1px solid #e5e3da;
+    border-bottom: 1px solid var(--divider);
+    gap: 8px;
+  }
+  header .right {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .theme-toggle {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--divider);
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    font-size: 16px;
+    box-shadow: var(--shadow);
   }
   header h1 {
     font-family: Georgia, "Times New Roman", serif;
@@ -103,7 +183,7 @@
     display: inline-block;
     padding: 2px 6px;
     margin: 1px 2px;
-    background: #f0eee4;
+    background: var(--frag-bg);
     border-radius: 6px;
     font-size: 16px;
   }
@@ -119,8 +199,8 @@
     transition: transform 0.06s ease, opacity 0.15s ease;
   }
   button:active { transform: scale(0.96); }
-  button.primary { background: var(--ink); color: #fff; }
-  button.secondary { background: #ece9df; color: var(--ink); }
+  button.primary { background: var(--ink); color: var(--bg); }
+  button.secondary { background: var(--chip-bg); color: var(--ink); }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .grid {
@@ -159,7 +239,7 @@
     font-weight: 500;
   }
   .tile.used-in-quartile {
-    background: #f7f1d9;
+    background: var(--tile-quartile-bg);
     border-color: var(--gold);
   }
   .tile.disabled { opacity: 0.45; cursor: not-allowed; }
@@ -192,13 +272,13 @@
     font-size: 13px;
     padding: 4px 10px;
     border-radius: 999px;
-    background: #ece9df;
+    background: var(--chip-bg);
     color: var(--ink);
     font-weight: 500;
   }
   .chip.quartile {
     background: var(--gold);
-    color: #fff;
+    color: var(--gold-text);
     font-weight: 700;
     letter-spacing: 0.04em;
   }
@@ -209,7 +289,7 @@
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: var(--ink);
-    color: #fff;
+    color: var(--bg);
     padding: 10px 18px;
     border-radius: 999px;
     font-size: 14px;
@@ -224,8 +304,8 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
-  .toast.success { background: #1c7a3e; }
-  .toast.quartile { background: var(--gold); color: #fff; }
+  .toast.success { background: #1c7a3e; color: #fff; }
+  .toast.quartile { background: var(--gold); color: var(--gold-text); }
 
   .footer {
     display: flex; justify-content: space-between;
@@ -235,6 +315,39 @@
     color: var(--muted);
   }
   .footer button { font-size: 12px; padding: 6px 12px; }
+
+  .layout {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .main, .side {
+    display: flex; flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  /* Wide screens (iPad landscape, desktop): two-column with found-words on the side. */
+  @media (min-width: 820px) {
+    .app { max-width: 960px; }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(260px, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .grid { aspect-ratio: 4 / 5; }
+    .side .found {
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+    }
+  }
+  @media (min-width: 1100px) {
+    .app { max-width: 1080px; }
+    .layout { grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr); }
+  }
 
   @keyframes pop {
     0% { transform: scale(1); }
@@ -252,7 +365,7 @@
 
   .victory-overlay {
     position: fixed; inset: 0;
-    background: rgba(28,28,30,0.7);
+    background: rgba(0,0,0,0.7);
     display: none;
     align-items: center; justify-content: center;
     z-index: 200;
@@ -260,7 +373,8 @@
   }
   .victory-overlay.show { display: flex; }
   .victory-card {
-    background: #fff;
+    background: var(--panel);
+    color: var(--ink);
     border-radius: 20px;
     padding: 28px 24px;
     text-align: center;
@@ -288,33 +402,43 @@
 <div class="app">
   <header>
     <h1>Tile Words</h1>
-    <div class="subtitle" id="puzzle-label">Puzzle 1</div>
+    <div class="right">
+      <div class="subtitle" id="puzzle-label">Puzzle 1</div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">&#9788;</button>
+    </div>
   </header>
 
-  <div class="stats">
-    <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-    <div class="stat"><div class="label">Quartiles</div><div class="value" id="quartile-count">0 / 5</div></div>
-    <div class="stat"><div class="label">Words</div><div class="value" id="word-count">0</div></div>
-  </div>
+  <div class="layout">
+    <div class="main">
+      <div class="stats">
+        <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
+        <div class="stat"><div class="label">Quartiles</div><div class="value" id="quartile-count">0 / 5</div></div>
+        <div class="stat"><div class="label">Words</div><div class="value" id="word-count">0</div></div>
+      </div>
 
-  <div class="word-bar" id="word-bar">
-    <div class="word-display empty" id="word-display">Tap tiles to build a word</div>
-    <div class="word-actions">
-      <button class="secondary" id="clear-btn" disabled>Clear</button>
-      <button class="primary" id="submit-btn" disabled>Enter</button>
+      <div class="word-bar" id="word-bar">
+        <div class="word-display empty" id="word-display">Tap tiles to build a word</div>
+        <div class="word-actions">
+          <button class="secondary" id="clear-btn" disabled>Clear</button>
+          <button class="primary" id="submit-btn" disabled>Enter</button>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="footer">
+        <button class="secondary" id="hint-btn">Hint</button>
+        <button class="secondary" id="shuffle-btn">Shuffle</button>
+        <button class="secondary" id="new-btn">New Puzzle</button>
+      </div>
     </div>
-  </div>
 
-  <div class="grid" id="grid"></div>
-
-  <div class="found">
-    <h2><span>Found</span> <span id="found-summary"></span></h2>
-    <div class="found-words" id="found-words"></div>
-  </div>
-
-  <div class="footer">
-    <button class="secondary" id="hint-btn">Hint</button>
-    <button class="secondary" id="new-btn">New Puzzle</button>
+    <aside class="side">
+      <div class="found">
+        <h2><span>Found</span> <span id="found-summary"></span></h2>
+        <div class="found-words" id="found-words"></div>
+      </div>
+    </aside>
   </div>
 </div>
 
@@ -346,6 +470,7 @@ const PUZZLES = [
       { idx: [8,9,10,11], quartile: true },   // PINEAPPLE
       { idx: [12,13,14,15], quartile: true }, // CHOCOLATE
       { idx: [16,17,18,19], quartile: true }, // STRAWBERRY
+      { idx: [0] },          // SUN
       { idx: [1,2] },        // FLOW
       { idx: [1,2,3] },      // FLOWER
       { idx: [4,5] },        // WATER
@@ -368,12 +493,14 @@ const PUZZLES = [
       { idx: [8,9,10,11], quartile: true },   // CROCODILE
       { idx: [12,13,14,15], quartile: true }, // KANGAROO
       { idx: [16,17,18,19], quartile: true }, // ALLIGATOR
+      { idx: [4] },          // BUT
       { idx: [4,5] },        // BUTTER
       { idx: [4,5,7] },      // BUTTERY
       { idx: [6,7] },        // FLY
       { idx: [2,11] },       // HALE
       { idx: [9,11] },       // COLE
       { idx: [18,19] },      // GATOR
+      { idx: [19] },         // OR
     ],
   },
 ];
@@ -383,10 +510,19 @@ let puzzleIndex = 0;
 let selection = []; // array of tile indices in selection order
 let foundWordKeys = new Set(); // canonical key per word
 let score = 0;
+let displayOrder = []; // grid position -> tile index (shuffled)
 
 const $ = (id) => document.getElementById(id);
 
 function currentPuzzle() { return PUZZLES[puzzleIndex]; }
+
+function shuffleDisplay() {
+  displayOrder = currentPuzzle().tiles.map((_, i) => i);
+  for (let i = displayOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [displayOrder[i], displayOrder[j]] = [displayOrder[j], displayOrder[i]];
+  }
+}
 
 function wordKey(idxArr) { return idxArr.join("-"); }
 
@@ -396,6 +532,7 @@ function wordFromIndices(idxArr) {
 }
 
 function pointsFor(len) {
+  if (len === 1) return 1;
   if (len === 2) return 2;
   if (len === 3) return 4;
   if (len === 4) return 8;
@@ -426,7 +563,9 @@ function renderGrid() {
       w.idx.forEach(i => usedInQuartile.add(i));
     }
   }
-  puzzle.tiles.forEach((frag, i) => {
+  if (displayOrder.length !== puzzle.tiles.length) shuffleDisplay();
+  displayOrder.forEach((i) => {
+    const frag = puzzle.tiles[i];
     const el = document.createElement("div");
     el.className = "tile";
     el.textContent = frag;
@@ -453,7 +592,7 @@ function renderWordBar() {
       .map(i => `<span class="frag">${currentPuzzle().tiles[i]}</span>`)
       .join("");
   }
-  $("submit-btn").disabled = selection.length < 2;
+  $("submit-btn").disabled = selection.length < 1;
   $("clear-btn").disabled = selection.length === 0;
 }
 
@@ -513,7 +652,7 @@ function clearSelection() {
 }
 
 function submitWord() {
-  if (selection.length < 2) return;
+  if (selection.length < 1) return;
   const match = findValidWord(selection);
   const key = wordKey(selection);
   if (!match) {
@@ -565,8 +704,39 @@ function resetGame() {
   selection = [];
   foundWordKeys = new Set();
   score = 0;
+  shuffleDisplay();
   hideVictory();
   render();
+}
+
+function shuffleGrid() {
+  selection = [];
+  shuffleDisplay();
+  render();
+}
+
+// --- Theme handling ---
+const THEME_KEY = "tilewords-theme";
+function getStoredTheme() {
+  try { return localStorage.getItem(THEME_KEY); } catch { return null; }
+}
+function setStoredTheme(t) {
+  try { localStorage.setItem(THEME_KEY, t); } catch {}
+}
+function effectiveTheme() {
+  const stored = getStoredTheme();
+  if (stored === "dark" || stored === "light") return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+function applyTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  const btn = $("theme-toggle");
+  if (btn) btn.innerHTML = t === "dark" ? "&#9728;" : "&#9789;";
+}
+function toggleTheme() {
+  const next = effectiveTheme() === "dark" ? "light" : "dark";
+  setStoredTheme(next);
+  applyTheme(next);
 }
 
 let toastTimer = null;
@@ -597,6 +767,8 @@ $("submit-btn").addEventListener("click", submitWord);
 $("clear-btn").addEventListener("click", clearSelection);
 $("new-btn").addEventListener("click", nextPuzzle);
 $("hint-btn").addEventListener("click", showHint);
+$("shuffle-btn").addEventListener("click", shuffleGrid);
+$("theme-toggle").addEventListener("click", toggleTheme);
 $("victory-next").addEventListener("click", () => { nextPuzzle(); });
 
 document.addEventListener("keydown", (e) => {
@@ -604,7 +776,14 @@ document.addEventListener("keydown", (e) => {
   else if (e.key === "Escape" || e.key === "Backspace") clearSelection();
 });
 
+// Follow system theme changes when no manual override is set.
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  if (!getStoredTheme()) applyTheme(effectiveTheme());
+});
+
 // Initial render
+applyTheme(effectiveTheme());
+shuffleDisplay();
 render();
 </script>
 </body>
