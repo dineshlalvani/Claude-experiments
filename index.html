@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tile Words</title>
+<style>
+  :root {
+    --bg: #f6f5f0;
+    --panel: #ffffff;
+    --ink: #1c1c1e;
+    --muted: #8e8e93;
+    --accent: #d72b3f;
+    --tile: #ffffff;
+    --tile-border: #e5e3da;
+    --tile-selected: #1c1c1e;
+    --tile-selected-text: #ffffff;
+    --tile-used: #ece9df;
+    --gold: #c9a227;
+    --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+  body {
+    display: flex; flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px 12px 32px;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    display: flex; flex-direction: column;
+    gap: 14px;
+  }
+  header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 4px 4px 8px;
+    border-bottom: 1px solid #e5e3da;
+  }
+  header h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    font-size: 26px;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  header .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .stat {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .stat .label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .stat .value {
+    font-size: 20px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .word-bar {
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+    min-height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+  }
+  .word-display {
+    flex: 1;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    min-height: 24px;
+    word-break: break-all;
+  }
+  .word-display.empty { color: var(--muted); font-weight: 400; font-size: 14px; }
+  .word-display .frag {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 1px 2px;
+    background: #f0eee4;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+  .word-actions { display: flex; gap: 6px; }
+  button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.06s ease, opacity 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+  button.primary { background: var(--ink); color: #fff; }
+  button.secondary { background: #ece9df; color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 8px;
+    aspect-ratio: 4 / 5;
+  }
+  .tile {
+    background: var(--tile);
+    border: 1.5px solid var(--tile-border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600;
+    font-size: clamp(14px, 4.5vw, 20px);
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s ease, color 0.12s ease, transform 0.08s ease, border-color 0.12s ease;
+    position: relative;
+    text-transform: uppercase;
+  }
+  .tile:active { transform: scale(0.96); }
+  .tile.selected {
+    background: var(--tile-selected);
+    color: var(--tile-selected-text);
+    border-color: var(--tile-selected);
+  }
+  .tile.selected::after {
+    content: attr(data-order);
+    position: absolute;
+    top: 4px; right: 6px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+  }
+  .tile.used-in-quartile {
+    background: #f7f1d9;
+    border-color: var(--gold);
+  }
+  .tile.disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .found {
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+  }
+  .found h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 700;
+    display: flex; justify-content: space-between;
+  }
+  .found-words {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    min-height: 24px;
+  }
+  .found-words:empty::before {
+    content: "No words yet — combine tiles to form a word.";
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .chip {
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #ece9df;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .chip.quartile {
+    background: var(--gold);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast.success { background: #1c7a3e; }
+  .toast.quartile { background: var(--gold); color: #fff; }
+
+  .footer {
+    display: flex; justify-content: space-between;
+    align-items: center;
+    padding: 4px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .footer button { font-size: 12px; padding: 6px 12px; }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .tile.pop { animation: pop 0.25s ease; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  .word-bar.shake { animation: shake 0.3s ease; }
+
+  .victory-overlay {
+    position: fixed; inset: 0;
+    background: rgba(28,28,30,0.7);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .victory-overlay.show { display: flex; }
+  .victory-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 24px;
+    text-align: center;
+    max-width: 320px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .victory-card h2 {
+    margin: 0 0 6px;
+    font-family: Georgia, serif;
+    font-size: 28px;
+  }
+  .victory-card p { margin: 4px 0; color: var(--muted); }
+  .victory-card .big-score {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 12px 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .victory-card button { margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Tile Words</h1>
+    <div class="subtitle" id="puzzle-label">Puzzle 1</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
+    <div class="stat"><div class="label">Quartiles</div><div class="value" id="quartile-count">0 / 5</div></div>
+    <div class="stat"><div class="label">Words</div><div class="value" id="word-count">0</div></div>
+  </div>
+
+  <div class="word-bar" id="word-bar">
+    <div class="word-display empty" id="word-display">Tap tiles to build a word</div>
+    <div class="word-actions">
+      <button class="secondary" id="clear-btn" disabled>Clear</button>
+      <button class="primary" id="submit-btn" disabled>Enter</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="found">
+    <h2><span>Found</span> <span id="found-summary"></span></h2>
+    <div class="found-words" id="found-words"></div>
+  </div>
+
+  <div class="footer">
+    <button class="secondary" id="hint-btn">Hint</button>
+    <button class="secondary" id="new-btn">New Puzzle</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="victory-overlay" id="victory">
+  <div class="victory-card">
+    <h2>Solved!</h2>
+    <p>You found all five quartiles.</p>
+    <div class="big-score" id="victory-score">0</div>
+    <p id="victory-words">0 words</p>
+    <button class="primary" id="victory-next">Next Puzzle</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// Puzzles: 20 tiles in a 5-row x 4-col grid, plus a curated list of valid words.
+// Each word lists the tile indices (0..19) used, in order.
+// Quartiles are exactly 4 tiles long. Tiles can be reused across different words.
+const PUZZLES = [
+  {
+    name: "Garden",
+    tiles: ["SUN","FL","OW","ER","WA","TER","FA","LL","PI","NE","AP","PLE","CHO","CO","LA","TE","STR","AW","BER","RY"],
+    words: [
+      { idx: [0,1,2,3], quartile: true },     // SUNFLOWER
+      { idx: [4,5,6,7], quartile: true },     // WATERFALL
+      { idx: [8,9,10,11], quartile: true },   // PINEAPPLE
+      { idx: [12,13,14,15], quartile: true }, // CHOCOLATE
+      { idx: [16,17,18,19], quartile: true }, // STRAWBERRY
+      { idx: [1,2] },        // FLOW
+      { idx: [1,2,3] },      // FLOWER
+      { idx: [4,5] },        // WATER
+      { idx: [6,7] },        // FALL
+      { idx: [8,9] },        // PINE
+      { idx: [10,11] },      // APPLE
+      { idx: [13,14] },      // COLA
+      { idx: [14,15] },      // LATE
+      { idx: [14,5] },       // LATER
+      { idx: [16,17] },      // STRAW
+      { idx: [18,19] },      // BERRY
+    ],
+  },
+  {
+    name: "Wild",
+    tiles: ["EL","EP","HA","NT","BUT","TER","FL","Y","CRO","CO","DI","LE","KAN","GA","RO","O","AL","LI","GAT","OR"],
+    words: [
+      { idx: [0,1,2,3], quartile: true },     // ELEPHANT
+      { idx: [4,5,6,7], quartile: true },     // BUTTERFLY
+      { idx: [8,9,10,11], quartile: true },   // CROCODILE
+      { idx: [12,13,14,15], quartile: true }, // KANGAROO
+      { idx: [16,17,18,19], quartile: true }, // ALLIGATOR
+      { idx: [4,5] },        // BUTTER
+      { idx: [4,5,7] },      // BUTTERY
+      { idx: [6,7] },        // FLY
+      { idx: [2,11] },       // HALE
+      { idx: [9,11] },       // COLE
+      { idx: [18,19] },      // GATOR
+    ],
+  },
+];
+
+// --- Game State ---
+let puzzleIndex = 0;
+let selection = []; // array of tile indices in selection order
+let foundWordKeys = new Set(); // canonical key per word
+let score = 0;
+
+const $ = (id) => document.getElementById(id);
+
+function currentPuzzle() { return PUZZLES[puzzleIndex]; }
+
+function wordKey(idxArr) { return idxArr.join("-"); }
+
+function wordFromIndices(idxArr) {
+  const tiles = currentPuzzle().tiles;
+  return idxArr.map(i => tiles[i]).join("");
+}
+
+function pointsFor(len) {
+  if (len === 2) return 2;
+  if (len === 3) return 4;
+  if (len === 4) return 8;
+  return 0;
+}
+
+function findValidWord(idxArr) {
+  const key = wordKey(idxArr);
+  return currentPuzzle().words.find(w => wordKey(w.idx) === key);
+}
+
+function render() {
+  const puzzle = currentPuzzle();
+  $("puzzle-label").textContent = `Puzzle ${puzzleIndex + 1} · ${puzzle.name}`;
+  renderGrid();
+  renderWordBar();
+  renderStats();
+  renderFound();
+}
+
+function renderGrid() {
+  const grid = $("grid");
+  grid.innerHTML = "";
+  const puzzle = currentPuzzle();
+  const usedInQuartile = new Set();
+  for (const w of puzzle.words) {
+    if (w.quartile && foundWordKeys.has(wordKey(w.idx))) {
+      w.idx.forEach(i => usedInQuartile.add(i));
+    }
+  }
+  puzzle.tiles.forEach((frag, i) => {
+    const el = document.createElement("div");
+    el.className = "tile";
+    el.textContent = frag;
+    el.dataset.index = i;
+    const selPos = selection.indexOf(i);
+    if (selPos >= 0) {
+      el.classList.add("selected");
+      el.dataset.order = selPos + 1;
+    }
+    if (usedInQuartile.has(i)) el.classList.add("used-in-quartile");
+    el.addEventListener("click", () => onTileTap(i, el));
+    grid.appendChild(el);
+  });
+}
+
+function renderWordBar() {
+  const display = $("word-display");
+  if (selection.length === 0) {
+    display.className = "word-display empty";
+    display.textContent = "Tap tiles to build a word";
+  } else {
+    display.className = "word-display";
+    display.innerHTML = selection
+      .map(i => `<span class="frag">${currentPuzzle().tiles[i]}</span>`)
+      .join("");
+  }
+  $("submit-btn").disabled = selection.length < 2;
+  $("clear-btn").disabled = selection.length === 0;
+}
+
+function renderStats() {
+  $("score").textContent = score;
+  const total = currentPuzzle().words.filter(w => w.quartile).length;
+  const found = currentPuzzle().words.filter(w => w.quartile && foundWordKeys.has(wordKey(w.idx))).length;
+  $("quartile-count").textContent = `${found} / ${total}`;
+  $("word-count").textContent = foundWordKeys.size;
+}
+
+function renderFound() {
+  const list = $("found-words");
+  list.innerHTML = "";
+  const puzzle = currentPuzzle();
+  // Sort: quartiles first, then by length desc, then alphabetical
+  const found = [...foundWordKeys]
+    .map(k => puzzle.words.find(w => wordKey(w.idx) === k))
+    .filter(Boolean)
+    .sort((a, b) => {
+      if (!!b.quartile - !!a.quartile) return !!b.quartile - !!a.quartile;
+      if (b.idx.length !== a.idx.length) return b.idx.length - a.idx.length;
+      return wordFromIndices(a.idx).localeCompare(wordFromIndices(b.idx));
+    });
+  for (const w of found) {
+    const chip = document.createElement("span");
+    chip.className = "chip" + (w.quartile ? " quartile" : "");
+    chip.textContent = wordFromIndices(w.idx);
+    list.appendChild(chip);
+  }
+  const totalWords = puzzle.words.length;
+  $("found-summary").textContent = `${foundWordKeys.size} / ${totalWords}`;
+}
+
+function onTileTap(i, el) {
+  const pos = selection.indexOf(i);
+  if (pos >= 0) {
+    // deselect this and anything after it (selection order matters)
+    selection = selection.slice(0, pos);
+  } else {
+    if (selection.length >= 4) {
+      flashToast("Maximum 4 tiles");
+      return;
+    }
+    selection.push(i);
+    el.classList.add("pop");
+    setTimeout(() => el.classList.remove("pop"), 250);
+  }
+  renderGrid();
+  renderWordBar();
+}
+
+function clearSelection() {
+  selection = [];
+  renderGrid();
+  renderWordBar();
+}
+
+function submitWord() {
+  if (selection.length < 2) return;
+  const match = findValidWord(selection);
+  const key = wordKey(selection);
+  if (!match) {
+    $("word-bar").classList.add("shake");
+    setTimeout(() => $("word-bar").classList.remove("shake"), 300);
+    flashToast("Not a word");
+    return;
+  }
+  if (foundWordKeys.has(key)) {
+    flashToast("Already found");
+    clearSelection();
+    return;
+  }
+  foundWordKeys.add(key);
+  const pts = pointsFor(selection.length);
+  score += pts;
+  if (match.quartile) {
+    flashToast(`Quartile! +${pts}`, "quartile");
+  } else {
+    flashToast(`+${pts}`, "success");
+  }
+  clearSelection();
+  render();
+  checkVictory();
+}
+
+function checkVictory() {
+  const quartiles = currentPuzzle().words.filter(w => w.quartile);
+  const allFound = quartiles.every(w => foundWordKeys.has(wordKey(w.idx)));
+  if (allFound) {
+    setTimeout(showVictory, 400);
+  }
+}
+
+function showVictory() {
+  $("victory-score").textContent = score;
+  $("victory-words").textContent = `${foundWordKeys.size} word${foundWordKeys.size === 1 ? "" : "s"} found`;
+  $("victory").classList.add("show");
+}
+
+function hideVictory() { $("victory").classList.remove("show"); }
+
+function nextPuzzle() {
+  puzzleIndex = (puzzleIndex + 1) % PUZZLES.length;
+  resetGame();
+}
+
+function resetGame() {
+  selection = [];
+  foundWordKeys = new Set();
+  score = 0;
+  hideVictory();
+  render();
+}
+
+let toastTimer = null;
+function flashToast(msg, kind = "") {
+  const el = $("toast");
+  el.textContent = msg;
+  el.className = "toast show " + kind;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    el.className = "toast " + kind;
+  }, 1400);
+}
+
+function showHint() {
+  const puzzle = currentPuzzle();
+  const remaining = puzzle.words.filter(w => w.quartile && !foundWordKeys.has(wordKey(w.idx)));
+  if (remaining.length === 0) {
+    flashToast("All quartiles found!");
+    return;
+  }
+  const pick = remaining[Math.floor(Math.random() * remaining.length)];
+  const firstTile = puzzle.tiles[pick.idx[0]];
+  flashToast(`A quartile starts with "${firstTile}"`);
+}
+
+// Wire up controls
+$("submit-btn").addEventListener("click", submitWord);
+$("clear-btn").addEventListener("click", clearSelection);
+$("new-btn").addEventListener("click", nextPuzzle);
+$("hint-btn").addEventListener("click", showHint);
+$("victory-next").addEventListener("click", () => { nextPuzzle(); });
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") submitWord();
+  else if (e.key === "Escape" || e.key === "Backspace") clearSelection();
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>
