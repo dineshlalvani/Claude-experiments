@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Euryka — Quiet Companion (Home v1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --serif: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--sans);
+    background: radial-gradient(circle at 50% 0%, #1a1a22 0%, #0d0d12 70%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 60px;
+    flex-wrap: wrap;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 390px;
+    height: 844px;
+    border-radius: 52px;
+    background: #000;
+    padding: 6px;
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.7),
+      0 0 0 1px rgba(255,255,255,0.06),
+      inset 0 0 0 2px rgba(255,255,255,0.04);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 46px;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Time-of-day backgrounds — all dark-leaning, with hue and warmth shifts */
+  .bg {
+    position: absolute; inset: 0;
+    z-index: 0;
+    transition: background 1.2s ease;
+    animation: breathe 9s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.92; }
+    50% { opacity: 1; }
+  }
+  .bg.morning {
+    background:
+      radial-gradient(70% 40% at 50% 0%, rgba(255,200,150,0.22) 0%, transparent 60%),
+      radial-gradient(60% 40% at 50% 100%, rgba(140,170,210,0.15) 0%, transparent 70%),
+      linear-gradient(180deg, #16182a 0%, #1a2040 55%, #1f2848 100%);
+  }
+  .bg.midday {
+    background:
+      radial-gradient(80% 50% at 50% 0%, rgba(180,210,240,0.18) 0%, transparent 60%),
+      linear-gradient(180deg, #182542 0%, #1d3056 55%, #213560 100%);
+  }
+  .bg.afternoon {
+    background:
+      radial-gradient(70% 40% at 50% 90%, rgba(255,160,100,0.22) 0%, transparent 60%),
+      linear-gradient(180deg, #181830 0%, #281f38 50%, #38242e 100%);
+  }
+  .bg.evening {
+    background:
+      radial-gradient(60% 40% at 50% 100%, rgba(255,140,80,0.28) 0%, rgba(255,140,80,0) 65%),
+      radial-gradient(80% 60% at 50% 75%, rgba(120,60,140,0.30) 0%, transparent 70%),
+      linear-gradient(180deg, #08081a 0%, #14132a 40%, #2a1a30 80%, #3a2520 100%);
+  }
+  .bg.night {
+    background:
+      radial-gradient(60% 40% at 50% 100%, rgba(80,90,170,0.16) 0%, transparent 60%),
+      linear-gradient(180deg, #02020a 0%, #06081a 60%, #0a0c20 100%);
+  }
+
+  /* Status bar */
+  .status-bar {
+    position: relative; z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 32px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .status-bar .icons { display: flex; gap: 7px; align-items: center; }
+
+  /* Content — greeting */
+  .content {
+    position: relative; z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 36px;
+    text-align: center;
+  }
+  .greeting {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 38px;
+    line-height: 1.18;
+    letter-spacing: -0.5px;
+    color: #f3ecdc;
+    margin-bottom: 18px;
+    text-wrap: balance;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .sub {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.55;
+    color: rgba(243,236,220,0.68);
+    text-wrap: balance;
+    max-width: 290px;
+    margin: 0 auto;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .greeting.fading, .sub.fading {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  /* Soft prompt above dial */
+  .prompt {
+    position: relative; z-index: 1;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.42);
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+    font-family: var(--sans);
+    transition: opacity 0.45s ease;
+  }
+  .prompt.fading { opacity: 0; }
+
+  /* Bottom controls */
+  .bottom {
+    position: relative; z-index: 1;
+    padding-bottom: 22px;
+  }
+  .mode-label {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #ffb060;
+    margin-bottom: 14px;
+  }
+  .dial-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 20px;
+  }
+  .dial {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255,255,255,0.14);
+    position: relative;
+  }
+  .dial::before {
+    content: '';
+    position: absolute; inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent, transparent 5%, rgba(255,255,255,0.08) 5.5%, transparent 6%, transparent 11%, rgba(255,255,255,0.08) 11.5%, transparent 12%);
+    background-size: 100% 100%;
+    -webkit-mask: radial-gradient(circle, transparent 52%, #000 53%, #000 56%, transparent 57%);
+            mask: radial-gradient(circle, transparent 52%, #000 53%, #000 56%, transparent 57%);
+  }
+  .dial .arrow {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #b070ff;
+  }
+  .dial .icon {
+    position: absolute;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+  }
+  .dial .icon.active {
+    color: #ffb060;
+    font-size: 16px;
+    text-shadow: 0 0 10px rgba(255,176,96,0.7);
+  }
+  .capture-btn {
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 30%, #ffe1a8 0%, #ffb060 50%, #f59030 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      0 0 60px rgba(255,160,80,0.45),
+      0 8px 28px rgba(0,0,0,0.35),
+      inset 0 -8px 20px rgba(180,80,20,0.3);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .capture-btn:active { transform: scale(0.96); }
+  .capture-btn svg { width: 38px; height: 38px; color: #fff; }
+
+  /* Liquid-glass tab bar */
+  .tab-bar {
+    margin: 0 22px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab-pill {
+    flex: 1;
+    background: rgba(30, 30, 45, 0.55);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 30px;
+    padding: 9px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 500;
+    letter-spacing: 0.2px;
+  }
+  .tab-item .ic { font-size: 17px; line-height: 1; }
+  .tab-item.active { color: #5ac8fa; }
+  .tab-search {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(30,30,45,0.55);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.7);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .tab-search svg { width: 18px; height: 18px; }
+
+  /* Controls panel */
+  .controls {
+    width: 280px;
+    color: #ddd;
+  }
+  .controls h2 {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: #f3ecdc;
+  }
+  .controls p {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 20px;
+    line-height: 1.55;
+  }
+  .controls .section {
+    margin-bottom: 22px;
+  }
+  .controls label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #888;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .controls .btn {
+    width: 100%;
+    background: linear-gradient(180deg, #2a2a35 0%, #1f1f28 100%);
+    color: #f3ecdc;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+  .controls .btn:hover { background: linear-gradient(180deg, #353542 0%, #25252f 100%); }
+  .seg {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    background: #1a1a22;
+    border-radius: 10px;
+    padding: 4px;
+    gap: 2px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .seg button {
+    background: transparent;
+    color: #999;
+    font-size: 11px;
+    padding: 8px 4px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  .seg button.active {
+    background: #3a3a48;
+    color: #f3ecdc;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .meta {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 11px;
+    color: #777;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 800px) {
+    body { gap: 30px; padding: 20px 10px; }
+    .phone { transform: scale(0.85); transform-origin: top center; margin-bottom: -120px; }
+    .controls { width: 100%; max-width: 390px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="screen">
+    <div class="bg evening" id="bg"></div>
+
+    <div class="status-bar">
+      <span class="time" id="clock">22:47</span>
+      <div class="icons">
+        <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="0.5" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="0.5" fill="currentColor"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.5" fill="currentColor"/><rect x="13.5" y="0" width="3" height="11" rx="0.5" fill="currentColor"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5l-2-2.3c.55-.5 1.25-.8 2-.8s1.45.3 2 .8L8 11.5zM8 7.3c-1.4 0-2.7.55-3.7 1.45L2.4 6.85C3.9 5.4 5.85 4.5 8 4.5s4.1.9 5.6 2.35l-1.9 1.9C10.7 7.85 9.4 7.3 8 7.3zM8 0c3.05 0 5.85 1.2 7.9 3.15l-1.9 1.95c-1.55-1.5-3.7-2.4-6-2.4s-4.45.9-6 2.4L0.1 3.15C2.15 1.2 4.95 0 8 0z" fill="currentColor"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="currentColor" fill="none" opacity="0.45"/><rect x="2" y="2" width="18" height="8" rx="1.5" fill="currentColor"/><rect x="22" y="3.5" width="2.2" height="5" rx="1" fill="currentColor" opacity="0.45"/></svg>
+      </div>
+    </div>
+
+    <main class="content">
+      <p class="greeting" id="greeting">A cool, overcast evening.</p>
+      <p class="sub" id="sub">Nothing's pulling at you, Dinesh — sit with it if you want.</p>
+    </main>
+
+    <p class="prompt" id="prompt">Or capture something.</p>
+
+    <div class="bottom">
+      <div class="mode-label" id="mode-label">MY DAY</div>
+      <div class="dial-row">
+        <div class="dial">
+          <div class="arrow"></div>
+          <div class="icon active" style="top: -2px; left: 50%; transform: translateX(-50%);">☀</div>
+          <div class="icon" style="top: 22%; right: -4px;">😊</div>
+          <div class="icon" style="bottom: 22%; right: -4px;">📍</div>
+          <div class="icon" style="bottom: -2px; left: 50%; transform: translateX(-50%);">📷</div>
+          <div class="icon" style="bottom: 22%; left: -4px;">✏</div>
+          <div class="icon" style="top: 22%; left: -4px;">🎨</div>
+        </div>
+        <div class="capture-btn" title="Capture My Day">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <circle cx="16" cy="20" r="4.5"/>
+            <line x1="16" y1="9" x2="16" y2="6"/>
+            <line x1="22" y1="11" x2="24" y2="9"/>
+            <line x1="10" y1="11" x2="8" y2="9"/>
+            <line x1="3" y1="20" x2="29" y2="20"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-pill">
+          <div class="tab-item active"><span class="ic">✦</span><span>Euryka</span></div>
+          <div class="tab-item"><span class="ic">💬</span><span>Chat</span></div>
+          <div class="tab-item"><span class="ic">▢</span><span>Vault</span></div>
+          <div class="tab-item"><span class="ic">◉</span><span>Profile</span></div>
+        </div>
+        <div class="tab-search">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><line x1="14" y1="14" x2="18" y2="18" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <h2>Quiet Companion</h2>
+  <p>The Home screen reframed as mood, not data. Time-of-day backdrop, written greeting, soft invitation toward the dial. Refresh to cycle phrasings — each time-of-day has 4–5 variants drawn from weather, calendar, and triage state.</p>
+
+  <div class="section">
+    <button class="btn" id="refresh">↻ New phrasing</button>
+  </div>
+
+  <div class="section">
+    <label>Time of day</label>
+    <div class="seg" id="tod">
+      <button data-tod="morning">Morning</button>
+      <button data-tod="midday">Midday</button>
+      <button data-tod="afternoon">Afternoon</button>
+      <button data-tod="evening" class="active">Evening</button>
+      <button data-tod="night">Night</button>
+    </div>
+  </div>
+
+  <div class="meta">
+    Compared to the original: data card removed, greeting moved to a serif voice, gradient backdrop replaces flat black, single soft prompt above the dial. Dial + tab bar untouched (canonical).
+  </div>
+</div>
+
+<script>
+  // Phrasings: written, contextual, varied. Each line ties greeting (scene) to sub (acknowledgement).
+  const phrasings = {
+    morning: [
+      { greeting: "A bright, soft start.", sub: "Coat-light weather, Dinesh — the day's still mostly yours." },
+      { greeting: "Just past dawn.", sub: "Three on the calendar, but no rush yet." },
+      { greeting: "Cool, clean morning.", sub: "Nothing pulling at you yet, Dinesh. The day is unwritten." },
+      { greeting: "Morning, Dinesh.", sub: "11° and overcast. A quiet start before anything begins." },
+    ],
+    midday: [
+      { greeting: "Middle of the day.", sub: "Halfway through, Dinesh — anything worth marking?" },
+      { greeting: "Bright and grey.", sub: "Quiet calendar from here. Room to breathe." },
+      { greeting: "A flat, even light.", sub: "Not much to triage. The afternoon's still soft." },
+      { greeting: "Past noon.", sub: "Cool out. Empty in. Whatever you need this hour to be." },
+    ],
+    afternoon: [
+      { greeting: "Late afternoon, low sun.", sub: "Cooling off. The day's mostly behind you, Dinesh." },
+      { greeting: "Long shadows.", sub: "Calendar's clear from here — the soft hours are yours." },
+      { greeting: "Afternoon, Dinesh.", sub: "Overcast and 11°. A quiet rest of the day ahead." },
+      { greeting: "The light's turning.", sub: "Nothing left to do today. Stay with it, or move." },
+    ],
+    evening: [
+      { greeting: "A cool, overcast evening.", sub: "Nothing's pulling at you, Dinesh — sit with it if you want." },
+      { greeting: "Evening, Dinesh.", sub: "Coat weather. Empty calendar. A good night to slow down." },
+      { greeting: "11° and overcast.", sub: "The city's wound down — so can you, Dinesh." },
+      { greeting: "A quiet evening at home.", sub: "Nothing left on the calendar. Nothing to triage. Just the hour." },
+      { greeting: "Evening drew in early.", sub: "Grey, cool, no plans. The kind of night that asks nothing of you." },
+    ],
+    night: [
+      { greeting: "It's late, and the city's gone quiet.", sub: "The day is done, Dinesh. Anything you want to put down?" },
+      { greeting: "Past eleven.", sub: "Lights off out there. Empty inbox in here." },
+      { greeting: "A still night.", sub: "Nothing pulling at you. Capture it, or close it." },
+      { greeting: "The day's closed.", sub: "11°, overcast, and quiet. Whatever's left is yours, Dinesh." },
+    ],
+  };
+
+  const prompts = {
+    morning: "Or just begin.",
+    midday: "Capture a thought.",
+    afternoon: "Or capture something.",
+    evening: "Or capture something.",
+    night: "Capture, or close it.",
+  };
+
+  let currentTod = 'evening';
+  let currentIdx = 0;
+
+  const g = document.getElementById('greeting');
+  const s = document.getElementById('sub');
+  const p = document.getElementById('prompt');
+  const bg = document.getElementById('bg');
+
+  function render(animate = true) {
+    const list = phrasings[currentTod];
+    const item = list[currentIdx % list.length];
+
+    if (animate) {
+      g.classList.add('fading');
+      s.classList.add('fading');
+      p.classList.add('fading');
+      setTimeout(() => {
+        g.textContent = item.greeting;
+        s.textContent = item.sub;
+        p.textContent = prompts[currentTod];
+        g.classList.remove('fading');
+        s.classList.remove('fading');
+        p.classList.remove('fading');
+      }, 280);
+    } else {
+      g.textContent = item.greeting;
+      s.textContent = item.sub;
+      p.textContent = prompts[currentTod];
+    }
+    bg.className = 'bg ' + currentTod;
+  }
+
+  document.getElementById('refresh').addEventListener('click', () => {
+    currentIdx = (currentIdx + 1) % phrasings[currentTod].length;
+    render(true);
+  });
+
+  document.querySelectorAll('#tod button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tod button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTod = btn.dataset.tod;
+      currentIdx = 0;
+      render(true);
+    });
+  });
+
+  // Keep status-bar clock alive
+  function tickClock() {
+    const d = new Date();
+    document.getElementById('clock').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tickClock(); setInterval(tickClock, 30000);
+
+  render(false);
+</script>
+</body>
+</html>
