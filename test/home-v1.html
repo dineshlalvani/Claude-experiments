@@ -145,6 +145,126 @@
     transform: translateY(4px);
   }
 
+  /* Atmosphere chip — weather + place, low-key */
+  .meta-strip {
+    margin-top: 26px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: rgba(243,236,220,0.6);
+    font-weight: 400;
+    letter-spacing: 0.1px;
+    transition: opacity 0.45s ease;
+  }
+  .meta-strip .ic { font-size: 13px; margin-right: 3px; opacity: 0.9; }
+  .meta-strip .sep { opacity: 0.35; margin: 0 4px; }
+
+  /* Moment chip — recent activity or pending action, tappable */
+  .moment-wrap {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    transition: opacity 0.45s ease;
+  }
+  .moment {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 100px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-size: 12.5px;
+    color: rgba(243,236,220,0.78);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+    font-family: var(--sans);
+    letter-spacing: 0.1px;
+  }
+  .moment:hover { background: rgba(255,255,255,0.08); transform: translateY(-1px); }
+  .moment:active { transform: translateY(0); }
+  .moment .chev { font-size: 13px; color: rgba(243,236,220,0.5); margin-left: 2px; }
+  .moment.action {
+    background: rgba(255,176,96,0.12);
+    border-color: rgba(255,176,96,0.28);
+    color: #ffd9a8;
+  }
+  .moment.action .chev { color: rgba(255,217,168,0.7); }
+  .meta-strip.fading, .moment-wrap.fading { opacity: 0; }
+
+  /* Ambient atmosphere — drifting cloud, stars, horizon glow */
+  .atmosphere {
+    position: absolute; inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .atmosphere .cloud,
+  .atmosphere .stars,
+  .atmosphere .horizon,
+  .atmosphere .sun-glow {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+  }
+  .atmosphere .cloud {
+    top: 14%;
+    left: -30%;
+    width: 100%;
+    fill: #fff;
+    animation: drift 110s linear infinite;
+  }
+  .atmosphere .cloud.b {
+    top: 32%;
+    left: -45%;
+    width: 80%;
+    animation: drift 160s linear infinite;
+    animation-delay: -40s;
+  }
+  @keyframes drift {
+    from { transform: translateX(-10%); }
+    to   { transform: translateX(120%); }
+  }
+  .atmosphere .stars span {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: twinkle 5s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 0.75; }
+  }
+  .atmosphere .horizon {
+    bottom: 32%;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,210,170,0.5) 50%, transparent 100%);
+    box-shadow: 0 0 24px rgba(255,210,170,0.3);
+  }
+  .atmosphere .sun-glow {
+    bottom: 22%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,180,100,0.3) 0%, transparent 65%);
+  }
+  .atmosphere.evening .cloud,
+  .atmosphere.evening .cloud.b { opacity: 0.07; }
+  .atmosphere.midday .cloud,
+  .atmosphere.midday .cloud.b { opacity: 0.10; }
+  .atmosphere.afternoon .sun-glow { opacity: 0.7; }
+  .atmosphere.morning .horizon { opacity: 0.6; }
+  .atmosphere.night .stars { opacity: 1; }
+
   /* Soft prompt above dial */
   .prompt {
     position: relative; z-index: 1;
@@ -322,6 +442,7 @@
     transition: background 0.2s ease;
   }
   .controls .btn:hover { background: linear-gradient(180deg, #353542 0%, #25252f 100%); }
+  .seg.seg-2 { grid-template-columns: repeat(2, 1fr); }
   .seg {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -404,6 +525,24 @@
 <div class="phone">
   <div class="screen">
     <div class="bg evening" id="bg"></div>
+    <div class="atmosphere evening" id="atmosphere">
+      <svg class="cloud" viewBox="0 0 200 70" preserveAspectRatio="none"><ellipse cx="40" cy="42" rx="36" ry="18"/><ellipse cx="90" cy="32" rx="50" ry="24"/><ellipse cx="155" cy="40" rx="42" ry="20"/></svg>
+      <svg class="cloud b" viewBox="0 0 200 70" preserveAspectRatio="none"><ellipse cx="55" cy="38" rx="44" ry="20"/><ellipse cx="120" cy="32" rx="55" ry="22"/></svg>
+      <div class="stars">
+        <span style="top:10%; left:14%;"></span>
+        <span style="top:6%;  left:32%; animation-delay:.7s;"></span>
+        <span style="top:14%; left:48%; animation-delay:1.4s;"></span>
+        <span style="top:8%;  left:65%; animation-delay:2.1s;"></span>
+        <span style="top:17%; left:78%; animation-delay:.3s;"></span>
+        <span style="top:22%; left:22%; animation-delay:1.8s;"></span>
+        <span style="top:26%; left:55%; animation-delay:.9s;"></span>
+        <span style="top:30%; left:70%; animation-delay:2.4s;"></span>
+        <span style="top:18%; left:88%; animation-delay:1.2s;"></span>
+        <span style="top:34%; left:12%; animation-delay:.5s;"></span>
+      </div>
+      <div class="horizon"></div>
+      <div class="sun-glow"></div>
+    </div>
 
     <div class="status-bar">
       <span class="time" id="clock">22:47</span>
@@ -417,6 +556,22 @@
     <main class="content">
       <p class="greeting" id="greeting">A cool, overcast evening.</p>
       <p class="sub" id="sub">Nothing's pulling at you, Dinesh — sit with it if you want.</p>
+
+      <div class="meta-strip" id="meta-strip">
+        <span class="meta"><span class="ic" id="weather-icon">☁</span><span id="weather-temp">11°</span></span>
+        <span class="sep">·</span>
+        <span id="weather-desc">overcast</span>
+        <span class="sep">·</span>
+        <span id="place-label">Home</span>
+      </div>
+
+      <div class="moment-wrap" id="moment-wrap">
+        <button class="moment" id="moment" type="button">
+          <span class="moment-icon" id="moment-icon">✨</span>
+          <span class="moment-text" id="moment-text">Last: a sketch, an hour ago</span>
+          <span class="chev">→</span>
+        </button>
+      </div>
     </main>
 
     <p class="prompt" id="prompt">Or capture something.</p>
@@ -478,8 +633,16 @@
     </div>
   </div>
 
+  <div class="section">
+    <label>Day state</label>
+    <div class="seg seg-2" id="state">
+      <button data-state="empty" class="active">Empty</button>
+      <button data-state="busy">Busy</button>
+    </div>
+  </div>
+
   <div class="meta">
-    Compared to the original: data card removed, greeting moved to a serif voice, gradient backdrop replaces flat black, single soft prompt above the dial. Dial + tab bar untouched (canonical).
+    Empty days surface a memory-toned chip (last capture). Busy days surface an action-toned chip (events / triage). Atmosphere chip carries weather + place. Backdrop gains ambient flourishes per time-of-day.
   </div>
 </div>
 
@@ -527,36 +690,76 @@
     night: "Capture, or close it.",
   };
 
+  // Atmosphere (weather + place) — what the chip displays per time-of-day.
+  const atmoByTime = {
+    morning:   { icon: '☁', temp: '9°',  desc: 'overcast',     place: 'Home' },
+    midday:    { icon: '☁', temp: '12°', desc: 'overcast',     place: 'Home' },
+    afternoon: { icon: '☁', temp: '11°', desc: 'cooling off',  place: 'Home' },
+    evening:   { icon: '☁', temp: '11°', desc: 'overcast',     place: 'Home' },
+    night:     { icon: '☁', temp: '9°',  desc: 'still and grey', place: 'Home' },
+  };
+
+  // Moment chip — memory tone on empty days, action tone on busy days.
+  const momentByState = {
+    empty: {
+      morning:   { icon: '✦', text: 'Tuesday morning rhymed with this' },
+      midday:    { icon: '✦', text: 'Last capture: a thought, 19h ago' },
+      afternoon: { icon: '✦', text: '4 captures today · last was a mood' },
+      evening:   { icon: '✦', text: 'Last: a sketch, an hour ago' },
+      night:     { icon: '✦', text: '6 captures today · close out the day?' },
+    },
+    busy: {
+      morning:   { icon: '◐', text: '3 events today · first at 09:30' },
+      midday:    { icon: '◐', text: '2 left on the calendar · next 14:00' },
+      afternoon: { icon: '◐', text: '5 things to triage' },
+      evening:   { icon: '◐', text: '5 things to triage · then you\'re done' },
+      night:     { icon: '◐', text: '2 still waiting · or sleep on it' },
+    },
+  };
+
   let currentTod = 'evening';
   let currentIdx = 0;
+  let currentState = 'empty';
 
   const g = document.getElementById('greeting');
   const s = document.getElementById('sub');
   const p = document.getElementById('prompt');
   const bg = document.getElementById('bg');
+  const atmosphere = document.getElementById('atmosphere');
+  const metaStrip = document.getElementById('meta-strip');
+  const momentWrap = document.getElementById('moment-wrap');
+  const moment = document.getElementById('moment');
 
   function render(animate = true) {
     const list = phrasings[currentTod];
     const item = list[currentIdx % list.length];
+    const atmo = atmoByTime[currentTod];
+    const mom = momentByState[currentState][currentTod];
 
-    if (animate) {
-      g.classList.add('fading');
-      s.classList.add('fading');
-      p.classList.add('fading');
-      setTimeout(() => {
-        g.textContent = item.greeting;
-        s.textContent = item.sub;
-        p.textContent = prompts[currentTod];
-        g.classList.remove('fading');
-        s.classList.remove('fading');
-        p.classList.remove('fading');
-      }, 280);
-    } else {
+    const apply = () => {
       g.textContent = item.greeting;
       s.textContent = item.sub;
       p.textContent = prompts[currentTod];
+      document.getElementById('weather-icon').textContent = atmo.icon;
+      document.getElementById('weather-temp').textContent = atmo.temp;
+      document.getElementById('weather-desc').textContent = atmo.desc;
+      document.getElementById('place-label').textContent = atmo.place;
+      document.getElementById('moment-icon').textContent = mom.icon;
+      document.getElementById('moment-text').textContent = mom.text;
+      moment.classList.toggle('action', currentState === 'busy');
+    };
+
+    if (animate) {
+      [g, s, p, metaStrip, momentWrap].forEach(el => el.classList.add('fading'));
+      setTimeout(() => {
+        apply();
+        [g, s, p, metaStrip, momentWrap].forEach(el => el.classList.remove('fading'));
+      }, 280);
+    } else {
+      apply();
     }
     bg.className = 'bg ' + currentTod;
+    atmosphere.className = 'atmosphere ' + currentTod;
   }
 
   document.getElementById('refresh').addEventListener('click', () => {
@@ -570,6 +773,15 @@
       btn.classList.add('active');
       currentTod = btn.dataset.tod;
       currentIdx = 0;
+      render(true);
+    });
+  });
+
+  document.querySelectorAll('#state button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#state button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentState = btn.dataset.state;
       render(true);
     });
   });
